@@ -1,0 +1,14 @@
+__pycache__
+data
+config
+converted
+logs
+zips
+*.png
+!body*.png
+!dream/*.png
+!mask/*.png
+!material/*.png
+!sample/*.png
+converted/
+.vscode/
