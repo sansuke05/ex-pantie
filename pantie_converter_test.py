@@ -57,34 +57,46 @@ def affine_transform_by_arr(img,
 
 
 def convert_chronos_pantie(image):
+    # デフォルトの行列を作成
     pantie = np.array(image)
+    print(pantie.shape)
+    # パンツの底部分になるパッチの作成
     patch = np.copy(pantie[-100:-5, 546:, :])
+    # パッチとして切り取った部分を削除
     pantie[-100:, 546:, :] = 0
+    # パッチを反転、サイズ調整
     patch = skt.resize(patch[::-1, ::-1, :],
                        (patch.shape[0] + 30, patch.shape[1]),
                        anti_aliasing=True,
                        mode='reflect')
+
+    # パッチを元のパンツに貼りつけ
     [pr, pc, d] = patch.shape
     pantie[127 - 5:127 - 5 + pr, :pc, :] = np.uint8(patch * 255)
 
+    # フロント部分だけ切り出し
     front = pantie[:350, :300]
-    show(front)
+    # フロント部分を形に合わせて変形
     arrx = (np.linspace(0, 1, 25)**2) * 43
     arrx[5:20] += np.sin(np.linspace(0, np.pi, 15)) * 4
     arrx[5:10] += np.sin(np.linspace(0, np.pi, 5)) * 13
     arry = np.zeros(25)
     arrx -= 30
     front = affine_transform_by_arr(front, arrx, arry)
+    # フロント部分を回転
     front = np.uint8(front[::-1, 7:][88:] * 255)
     show(front)
 
+    # バック部分の切り出しと左右反転
     back = pantie[:350, 300:-10][:, ::-1]
     show(back)
+    # バック部分を形に合わせて変形
     arrx = (np.linspace(0, 1, 25)**2) * 115
     arrx[2:14] += np.sin(np.linspace(0, np.pi, 12)) * 7
     arry = np.zeros(25)
     arrx -= 70
     back = affine_transform_by_arr(back, arrx, arry)
+    show(back)
     back = np.uint8(back[3:, 10:10 + front.shape[1]] * 255)
 
     pantie = np.concatenate((back, front), axis=0)
@@ -93,6 +105,11 @@ def convert_chronos_pantie(image):
     pantie = np.concatenate((pantie[:, ::-1], pantie), axis=1)
     return pantie
     #return Image.fromarray(pantie)
+
+
+def convert_cynthia_pantie(image):
+    pantie = np.array(image)
+    return pantie
 
 
 def convert_vroid_pantie(pantie):
@@ -129,7 +146,7 @@ def convert_quiche_pantie(img):
 #    pantie.save(f'{converted_dir}{num+1:04d}.png')
 
 # ribbon.resize((ribbon.width*m, ribbon.height*m), resample=Image.BICUBIC)
-available_models = ['quiche', 'vroid', 'chronos']
+available_models = ['quiche', 'vroid', 'chronos', 'cynthia']
 available_panties = sorted(os.listdir(dreamdir))
 
 
@@ -167,8 +184,10 @@ def patcher(num=0, model=None):
         converted_pantie = convert_quiche_pantie(pantie)
     elif model == available_models[1]:
         converted_pantie = convert_vroid_pantie(pantie)
-    else:
+    elif model == available_models[2]:
         converted_pantie = convert_chronos_pantie(pantie)
+    else:
+        converted_pantie = convert_cynthia_pantie(pantie)
     # Output
     #save_pantie(num, model, converted_pantie)
     io.imshow(converted_pantie)
@@ -176,7 +195,7 @@ def patcher(num=0, model=None):
 
 
 # 以下は想定される実行形式(適宜コメントアウトしながらテストしてください)
-patcher()
+patcher(num=1, model='chronos')
 #patcher(num=2)
 #patcher(model='vroid')
 #patcher(num=2, model='quiche')
