@@ -83,7 +83,7 @@ def convert_chronos_pantie(image):
     arry = np.zeros(25)
     arrx -= 30
     front = affine_transform_by_arr(front, arrx, arry)
-    # フロント部分を回転
+    # フロント部分を上下反転
     front = np.uint8(front[::-1, 7:][88:] * 255)
     show(front)
 
@@ -98,7 +98,9 @@ def convert_chronos_pantie(image):
     back = affine_transform_by_arr(back, arrx, arry)
     show(back)
     back = np.uint8(back[3:, 10:10 + front.shape[1]] * 255)
+    show(back)
 
+    # フロントとバックを結合、調整
     pantie = np.concatenate((back, front), axis=0)
     pantie = np.uint8(resize(pantie, [1.55, 1.745]) * 255)
     #pantie = np.bitwise_and(pantie, mask)
@@ -109,6 +111,39 @@ def convert_chronos_pantie(image):
 
 def convert_cynthia_pantie(image):
     pantie = np.array(image)
+    patch = np.copy(pantie[-100:-5, 546:, :])
+    pantie[-100:, 546:, :] = 0
+    patch = skt.resize(patch[::-1, ::-1, :],
+                       (patch.shape[0] + 30, patch.shape[1]),
+                       anti_aliasing=True,
+                       mode='reflect')
+
+    # パッチを元のパンツに貼りつけ
+    [pr, pc, d] = patch.shape
+    pantie[127 - 5:127 - 5 + pr, :pc, :] = np.uint8(patch * 255)
+
+    # フロント部分だけ切り出し
+    front = pantie[:350, :300]
+    show(front)
+
+    # バック部分の切り出しと左右反転
+    back = pantie[:350, 300:-10][:, ::-1]
+    # バック部分を形に合わせて変形
+    arrx = (np.linspace(0, 1, 25)**2) * 115
+    arrx[2:14] += np.sin(np.linspace(0, np.pi, 12)) * 7
+    arry = np.zeros(25)
+    arrx -= 70
+    back = affine_transform_by_arr(back, arrx, arry)
+    show(back)
+    # バック部分を上下反転
+    back = np.uint8(back[::-1, 7:] * 255)
+    show(back)
+    back = np.uint8(back[3:, 10:10 + front.shape[1]])
+
+    # フロントとバックを結合、調整
+    pantie = np.concatenate((front, back), axis=0)
+    pantie = np.uint8(resize(pantie, [1.55, 1.745]) * 255)
+    pantie = np.concatenate((pantie[:, ::-1], pantie), axis=1)
     return pantie
 
 
@@ -195,6 +230,7 @@ def patcher(num=0, model=None):
 
 
 # 以下は想定される実行形式(適宜コメントアウトしながらテストしてください)
+#patcher(num=1, model='cynthia')
 patcher(num=1, model='chronos')
 #patcher(num=2)
 #patcher(model='vroid')
