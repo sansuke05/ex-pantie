@@ -9,6 +9,9 @@ dreamdir = '.\\img\\'
 converted_dir = '.\\converted\\'
 mask = io.imread('./mask/mask_chronos.png')
 
+if os.name is not 'nt': # for Mac, linux or Unix OS
+    dreamdir = './dreams/'
+    converted_dir.replace('\\', '/')
 
 def resize(img, mag):
     return skt.resize(
@@ -126,6 +129,12 @@ def convert_cynthia_pantie(image):
     front = pantie[:350, :300]
     show(front)
 
+    # フロント部分を下にずらす
+    arrx = np.zeros(100) - 100
+    arry = np.zeros(100)
+    front = affine_transform_by_arr(front, arrx, arry)
+    show(front)
+
     # バック部分の切り出しと左右反転
     back = pantie[:350, 300:-10][:, ::-1]
     # バック部分を形に合わせて変形
@@ -230,8 +239,8 @@ def patcher(num=0, model=None):
 
 
 # 以下は想定される実行形式(適宜コメントアウトしながらテストしてください)
-#patcher(num=1, model='cynthia')
-patcher(num=1, model='chronos')
+patcher(num=1, model='cynthia')
+#patcher(num=1, model='chronos')
 #patcher(num=2)
 #patcher(model='vroid')
 #patcher(num=2, model='quiche')
