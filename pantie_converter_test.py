@@ -126,13 +126,7 @@ def convert_cynthia_pantie(image):
     pantie[127 - 5:127 - 5 + pr, :pc, :] = np.uint8(patch * 255)
 
     # フロント部分だけ切り出し
-    front = pantie[:350, :300]
-    show(front)
-
-    # フロント部分を下にずらす
-    arrx = np.zeros(100) - 100
-    arry = np.zeros(100)
-    front = affine_transform_by_arr(front, arrx, arry)
+    front = pantie[:350-105, 7:300]
     show(front)
 
     # バック部分の切り出しと左右反転
@@ -147,7 +141,7 @@ def convert_cynthia_pantie(image):
     # バック部分を上下反転
     back = np.uint8(back[::-1, 7:] * 255)
     show(back)
-    back = np.uint8(back[3:, 10:10 + front.shape[1]])
+    back = back[3:, 10:10 + front.shape[1]]
 
     # フロントとバックを結合、調整
     pantie = np.concatenate((front, back), axis=0)
