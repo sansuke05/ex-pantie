@@ -7,11 +7,12 @@ import matplotlib.pyplot as plt
 
 dreamdir = '.\\img\\'
 converted_dir = '.\\converted\\'
-mask = io.imread('./mask/mask_chronos.png')
+mask = io.imread('./mask/mask_cynthia.png')
 
-if os.name is not 'nt': # for Mac, linux or Unix OS
+if os.name is not 'nt':  # for Mac, linux or Unix OS
     dreamdir = './dreams/'
     converted_dir.replace('\\', '/')
+
 
 def resize(img, mag):
     return skt.resize(
@@ -106,7 +107,7 @@ def convert_chronos_pantie(image):
     # フロントとバックを結合、調整
     pantie = np.concatenate((back, front), axis=0)
     pantie = np.uint8(resize(pantie, [1.55, 1.745]) * 255)
-    #pantie = np.bitwise_and(pantie, mask)
+    pantie = np.bitwise_and(pantie, mask)
     pantie = np.concatenate((pantie[:, ::-1], pantie), axis=1)
     return pantie
     #return Image.fromarray(pantie)
@@ -126,7 +127,7 @@ def convert_cynthia_pantie(image):
     pantie[127 - 5:127 - 5 + pr, :pc, :] = np.uint8(patch * 255)
 
     # フロント部分だけ切り出し
-    front = pantie[:350-105, 7:300]
+    front = pantie[:350 - 105, 7:300]
     show(front)
 
     # バック部分の切り出しと左右反転
@@ -134,8 +135,8 @@ def convert_cynthia_pantie(image):
     # バック部分を形に合わせて変形
     arrx = (np.linspace(0, 1, 25)**2) * 115
     arrx[2:14] += np.sin(np.linspace(0, np.pi, 12)) * 7
-    arry = np.zeros(25)
-    arrx -= 70
+    arry = (np.linspace(0, 1, 25)**2) * 115
+    arrx -= 60
     back = affine_transform_by_arr(back, arrx, arry)
     show(back)
     # バック部分を上下反転
@@ -145,7 +146,9 @@ def convert_cynthia_pantie(image):
 
     # フロントとバックを結合、調整
     pantie = np.concatenate((front, back), axis=0)
-    pantie = np.uint8(resize(pantie, [1.55, 1.745]) * 255)
+    pantie = np.uint8(resize(pantie, [0.789, 0.878]) * 255)
+    print(pantie.shape)
+    pantie = np.bitwise_and(pantie, mask)
     pantie = np.concatenate((pantie[:, ::-1], pantie), axis=1)
     return pantie
 
